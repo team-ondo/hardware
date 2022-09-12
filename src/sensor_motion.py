@@ -7,17 +7,24 @@ pir = 16
 GPIO.setup(pir, GPIO.IN)
 
 print('Initializing Sensor...')
-sleep(2)
+sleep(2) # allow sensor time to intialize
+print("Let's do this")
 
 def getMotion():
-    if GPIO.input(pir):
-        # motion detected
-        return True
-    
-    elif not GPIO.input(pir):
-        # no motion detected
-        return False
 
-    elif KeyboardInterrupt: 
-        GPIO.cleanup() # reset GPIO
-        print("Program ended")
+    try:
+        motion = GPIO.input(pir)
+        if motion:
+            # print("MOTION DETECTED")
+            return True
+        
+        elif not motion:
+            # print("<no motion>")
+            return False
+
+    except KeyboardInterrupt:
+        GPIO.cleanup() #reset GPIO
+
+while True:
+    print(getMotion())
+    sleep(2)
