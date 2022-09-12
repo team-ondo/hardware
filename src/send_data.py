@@ -13,6 +13,8 @@ URL = 'http://127.0.0.1:8000'
 
 ## SEND DATA OUT
 
+valid_data = {}
+
 def create_sensor_data_dict():
     try:
         sensor_temp = getTemp()
@@ -31,14 +33,14 @@ def create_sensor_data_dict():
             'alarm': alarm,
             'button': button
         }
-        print(sensor_data_out)
+
+        valid_data = sensor_data_out
         return sensor_data_out
     except:
-        pass
+        # pass
+        return valid_data
 
 ## LOOP DATA SEND OUT
-
-
 
 while True:
     # create_sensor_data_dict()
