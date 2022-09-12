@@ -17,19 +17,6 @@ app = FastAPI()
 @app.get('/')
 async def root():
     return {'message': "Hello World"}
-# origins = [
-#     f'{URL}',
-#     f'{URL}/sensor_data'
-# ]
-
-# app.add_middleware(
-#     CORSMiddleware, 
-#     # TODO change origin 
-#     allow_origins=['*'],
-#     allow_credentials=True,
-#     allow_methods=['*'],
-#     allow_headers=['*'],
-#     )
 
 class Device_Input(BaseModel):
     temperature_c: float
@@ -41,5 +28,8 @@ class Device_Input(BaseModel):
 
 @app.post('/sensor_data')
 async def send_data_post(device_input: Device_Input):
+    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+    print(device_input)
+    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-")
     return device_input
 
