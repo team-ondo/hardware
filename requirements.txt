@@ -1,2 +1,0 @@
-adafruit-python-shell
-adafruit-circuitpython-dht
