@@ -1,4 +1,5 @@
 from ast import alias
+from venv import create
 from xmlrpc.client import boolean
 from sensor_temp import getTemp
 from sensor_motion import getMotion 
@@ -8,22 +9,20 @@ import requests
 import json
 import time
 
-
 URL = 'http://127.0.0.1:8000'
 
-## SEND DATA OUT
-
-valid_data = {}
-
+## SEND DATA OUT   
 def create_sensor_data_dict():
+    sensor_temp = getTemp()
+
     try:
-        sensor_temp = getTemp()
         temp_c = round(sensor_temp["temperature_c"], 1)
         temp_f = round(sensor_temp["temperature_f"], 1)
         humidity = sensor_temp["humidity"]
         motion = getMotion()
         alarm = alarm_on()
         button = button_pressed()
+        timestamp = time.time()
 
         sensor_data_out = {
             'temperature_c': temp_c,
@@ -31,19 +30,20 @@ def create_sensor_data_dict():
             'humidity': humidity,
             'motion': motion,
             'alarm': alarm,
-            'button': button
+            'button': button,
+            'created_at': timestamp
         }
 
-        valid_data = sensor_data_out
         return sensor_data_out
     except:
-        # pass
-        return valid_data
+        return sensor_temp
 
 ## LOOP DATA SEND OUT
-
-while True:
-    # create_sensor_data_dict()
-    req = requests.post(f'{URL}/sensor_data', json = create_sensor_data_dict())
-    print(req.text)
-    time.sleep(2)
+# ignore this code block on import as module
+if __name__ == '__main__': 
+    while True:
+        result = create_sensor_data_dict()
+        if type(result) == dict:
+            req = requests.post(f'{URL}/sensor_data', json = result)
+            # print(req.text)
+        time.sleep(2)
