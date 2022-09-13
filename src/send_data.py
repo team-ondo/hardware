@@ -8,8 +8,10 @@ from button import button_pressed
 import requests
 import json
 import time
+import datetime
 
 URL = 'http://127.0.0.1:8000'
+DEVICE_ID = '1'
 
 ## SEND DATA OUT   
 def create_sensor_data_dict():
@@ -22,7 +24,7 @@ def create_sensor_data_dict():
         motion = getMotion()
         alarm = alarm_on()
         button = button_pressed()
-        timestamp = time.time()
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         sensor_data_out = {
             'temperature_c': temp_c,
@@ -44,6 +46,6 @@ if __name__ == '__main__':
     while True:
         result = create_sensor_data_dict()
         if type(result) == dict:
-            req = requests.post(f'{URL}/sensor_data', json = result)
-            # print(req.text)
+            req = requests.post(f'{URL}/device-data/{DEVICE_ID}', json = result)
+            print(req.text)
         time.sleep(2)
