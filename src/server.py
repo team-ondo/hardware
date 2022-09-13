@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 
 URL = 'http://127.0.0.1:8000'
+DEVICE_ID = '1'
 
 ## RECEIVE DATA IN
 app = FastAPI()
@@ -21,7 +22,7 @@ class Device_Input(BaseModel):
     button: str
     created_at: str
 
-@app.post('/sensor_data', response_model=Device_Input)
+@app.post(f'/device-data/{DEVICE_ID}', response_model=Device_Input)
 async def send_data_post(device_input: Device_Input):
     return device_input
 
