@@ -15,9 +15,9 @@ DEVICE_ID = '1'
 
 ## SEND DATA OUT   
 def create_sensor_data_dict():
-    sensor_temp = getTemp()
-
+    
     try:
+        sensor_temp = getTemp()
         temp_c = round(sensor_temp["temperature_c"], 1)
         temp_f = round(sensor_temp["temperature_f"], 1)
         humidity = sensor_temp["humidity"]
@@ -26,7 +26,7 @@ def create_sensor_data_dict():
         button = button_pressed()
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        sensor_data_out = {
+        return {
             'temperature_c': temp_c,
             'temperature_f': temp_f,
             'humidity': humidity,
@@ -36,7 +36,6 @@ def create_sensor_data_dict():
             'created_at': timestamp
         }
 
-        return sensor_data_out
     except:
         return sensor_temp
 
