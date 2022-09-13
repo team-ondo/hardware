@@ -11,13 +11,7 @@ from pydantic import BaseModel
 URL = 'http://127.0.0.1:8000'
 
 ## RECEIVE DATA IN
-
 app = FastAPI()
-
-@app.get('/')
-async def root():
-    return {'message': "Hello World"}
-
 class Device_Input(BaseModel):
     temperature_c: float
     temperature_f: float
@@ -25,11 +19,9 @@ class Device_Input(BaseModel):
     motion: str
     alarm: str
     button: str
+    created_at: str
 
-@app.post('/sensor_data')
+@app.post('/sensor_data', response_model=Device_Input)
 async def send_data_post(device_input: Device_Input):
-    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-    print(device_input)
-    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-")
     return device_input
 
