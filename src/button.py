@@ -14,7 +14,9 @@ GPIO.setup(LED,GPIO.OUT)
     
 def button_input():
     button_state = GPIO.input(BUTTON)
-    if button_state == 0:
+    on = 0
+
+    if button_state == on:
         GPIO.output(LED,GPIO.HIGH)
         return True
     else:
