@@ -11,12 +11,13 @@ LED = 24
 GPIO.setup(BUTTON,GPIO.IN,pull_up_down=GPIO.PUD_UP)
 GPIO.setup(LED,GPIO.OUT)
 
+ON = 0
+
     
 def button_input():
     button_state = GPIO.input(BUTTON)
-    on = 0
 
-    if button_state == on:
+    if button_state == ON:
         GPIO.output(LED,GPIO.HIGH)
         return True
     else:
