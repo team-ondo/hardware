@@ -1,6 +1,5 @@
 import time
-from os import path, environ
-environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
+from os import path
 from pygame import mixer
 
 ONDO_ANNOUNCER_HOT = path.join(path.dirname(__file__), "./audio/ondo_announcer_hot.wav")
