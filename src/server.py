@@ -19,7 +19,7 @@ class Device_Input(BaseModel):
     humidity: float
     motion: str
     alarm: str
-    button: str
+    button_home: str
     created_at: str
 
 @app.post(f'/device-data/{DEVICE_ID}', response_model=Device_Input)
