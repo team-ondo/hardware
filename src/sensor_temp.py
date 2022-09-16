@@ -2,12 +2,13 @@
 
 import adafruit_dht
 import board
-import time
+from time import sleep
+from exception import CouldNotReadTempHumiditySensorRuntimeError, CouldNotReadTempHumiditySensorUnRecoverableError
 
 # Initialize the dht device
 dhtDevice = adafruit_dht.DHT22(board.D4)
 
-def getTemp():
+def get_temp():
     try:
         # Print the values to the serial port
         temperature_c = dhtDevice.temperature
@@ -21,9 +22,13 @@ def getTemp():
         }
         return temp_sensor_data
 
-    except RuntimeError as error:
-        return error.args[0]
-    except Exception as error:
-        # TODO: Send error info to the database
+    except RuntimeError as e:
+        raise CouldNotReadTempHumiditySensorRuntimeError(e)
+    except Exception as e:
         dhtDevice.exit()
-        raise error
+        raise CouldNotReadTempHumiditySensorUnRecoverableError(e)
+
+if __name__ == "__main__":
+    while True:
+        print(get_temp())
+        sleep(2)
