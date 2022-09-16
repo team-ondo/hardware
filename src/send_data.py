@@ -1,71 +1,43 @@
-from sensor_temp import get_temp
-from sensor_motion import get_motion
-from alarm import alarm_on
-from button import button_pressed
 import requests
-from pprint import pprint
 from requests import RequestException
-import time
-import datetime
-import os
-from dotenv import load_dotenv
+from pprint import pprint
+from time import sleep
+# import os
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
-URL = os.getenv("SERVER_URL")
-DEVICE_ID = '1'
+# URL = os.getenv("SERVER_URL")
+# DEVICE_ID = '1'
 
-## SEND DATA OUT
-def create_sensor_data_dict():
-    """Create data from multiple sensors
-
-    Raises:
-        e: Failed to get data from sensor
-
-    Returns:
-        dict: Dictionary of sensor data
-    """
-    
+def send_data(data, URL, DEVICE_ID):
     try:
-        sensor_temp = get_temp()
-        temp_c = round(sensor_temp["temperature_c"], 1)
-        temp_f = round(sensor_temp["temperature_f"], 1)
-        humidity = sensor_temp["humidity"]
-        motion = get_motion()
-        alarm = False #alarm_on()
-        button = button_pressed()
-        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print('Sending')
+        # pprint(data)
+        res = requests.post(f'{URL}/device-data/{DEVICE_ID}', json = data)
+        print(res.text)
 
-        return [{
-            'temperature_c': temp_c,
-            'temperature_f': temp_f,
-            'humidity': humidity,
-            'motion': motion,
-            'alarm': alarm,
-            'button': button,
-            'created_at': timestamp
-        }]
+        try:
+            res.raise_for_status()
+            
+        except RequestException as e:
+            print("Request failed: ", e)
+            pass
+
+        print('Successfully send the data to server')
 
     except Exception as e:
-        raise e
+        print("Some failure occurred when monitoring sensor")
 
-## LOOP DATA SEND OUT
-# ignore this code block on import as module
 if __name__ == '__main__': 
     while True:
-        try:
-            result = create_sensor_data_dict()
-            print('##########')
-            print('Sending')
-            pprint(result)
-            res = requests.post(f'{URL}/device-data/{DEVICE_ID}', json = result)
-            try:
-                res.raise_for_status()
-            except RequestException as e:
-                print("Request failed: ", e)
-                continue
-
-            print('Successfully send the data to server')
-            time.sleep(5)
-        except Exception as e:
-            print("Some failure occurred when monitoring sensor")
+        send_data({
+            "temperature_c": 90.6,
+            "temperature_f": 0.5,
+            "humidity": 45.0,
+            "motion": "MOTION",
+            "alarm": "ALARM",
+            "button_home": "BH",
+            "created_at": "some date and time"
+        }, "http://127.0.0.1:8000", 1)
+        sleep(2)
