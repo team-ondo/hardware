@@ -9,14 +9,17 @@ def on_hot():
     mixer.init()
     alarm = mixer.Sound(ONDO_ANNOUNCER_HOT)
     alarm.play()
+    return True
 
 def on_cold():
     mixer.init()
     alarm = mixer.Sound(ONDO_ANNOUNCER_COLD)
     alarm.play()
+    return True
 
 def off():
     mixer.stop()
+    return False
 
 if __name__ == '__main__': 
     while True:
