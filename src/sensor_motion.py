@@ -1,17 +1,17 @@
 import RPi.GPIO as GPIO
 from time import sleep
+from exception import CouldNotReadMotionSensorError
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-pir = 16
-GPIO.setup(pir, GPIO.IN)
+PIR = 16
+GPIO.setup(PIR, GPIO.IN)
 
 print('Initializing Sensor...')
 
-def getMotion():
-
+def get_motion():
     try:
-        motion = GPIO.input(pir)
+        motion = GPIO.input(PIR)
         if motion:
             # when motion detected
             return True
@@ -20,8 +20,10 @@ def getMotion():
             # when motion not detected
             return False
 
-    except KeyboardInterrupt:
-        GPIO.cleanup() #reset GPIO
+    except Exception as e:
+        raise CouldNotReadMotionSensorError("Motion Sensor Error : ", e)
 
 if __name__ == "__main__":
-    print(getMotion())
+    while True:
+        print(get_motion())
+        sleep(.2)
