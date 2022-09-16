@@ -1,5 +1,5 @@
-from sensor_temp import getTemp
-from sensor_motion import getMotion
+from sensor_temp import get_temp
+from sensor_motion import get_motion
 from alarm import alarm_on
 from button import button_pressed
 import requests
@@ -27,11 +27,11 @@ def create_sensor_data_dict():
     """
     
     try:
-        sensor_temp = getTemp()
+        sensor_temp = get_temp()
         temp_c = round(sensor_temp["temperature_c"], 1)
         temp_f = round(sensor_temp["temperature_f"], 1)
         humidity = sensor_temp["humidity"]
-        motion = getMotion()
+        motion = get_motion()
         alarm = False #alarm_on()
         button = button_pressed()
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
