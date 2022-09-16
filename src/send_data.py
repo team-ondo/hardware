@@ -10,11 +10,11 @@ from time import sleep
 # URL = os.getenv("SERVER_URL")
 # DEVICE_ID = '1'
 
-def send_data(data, URL, DEVICE_ID):
+def send_data(data, url, device_id):
     try:
         print('Sending')
         # pprint(data)
-        res = requests.post(f'{URL}/device-data/{DEVICE_ID}', json = data)
+        res = requests.post(f'{url}/device-data/{device_id}', json = data)
         print(res.text)
 
         try:
@@ -27,7 +27,7 @@ def send_data(data, URL, DEVICE_ID):
         print('Successfully send the data to server')
 
     except Exception as e:
-        print("Some failure occurred when monitoring sensor")
+        print("Some failure occurred when monitoring sensor", e)
 
 if __name__ == '__main__': 
     while True:
