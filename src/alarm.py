@@ -8,17 +8,20 @@ ONDO_ANNOUNCER_COLD = path.join(path.dirname(__file__), "./audio/ondo_announcer_
 def on_hot():
     mixer.init()
     alarm = mixer.Sound(ONDO_ANNOUNCER_HOT)
-    alarm.play()
+    if not mixer.get_busy():
+        alarm.play()
     return True
 
 def on_cold():
     mixer.init()
     alarm = mixer.Sound(ONDO_ANNOUNCER_COLD)
-    alarm.play()
+    if not mixer.get_busy():
+        alarm.play()
     return True
 
 def off():
-    mixer.stop()
+    if mixer.get_busy():
+        mixer.stop()
     return False
 
 if __name__ == '__main__': 
