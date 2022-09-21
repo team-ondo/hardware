@@ -5,7 +5,7 @@ import button_home
 from time import sleep
 import datetime
 
-def create(alarm_status, button_home_status):
+def create(alarm_status, button_home_status, button_snooze_status):
     """Create data from multiple sensors
 
     Raises:
@@ -30,6 +30,7 @@ def create(alarm_status, button_home_status):
             'motion': motion,
             'alarm': alarm_status,
             'button': button_home_status,
+            'snooze': button_snooze_status,
             'created_at': timestamp
         }
 
