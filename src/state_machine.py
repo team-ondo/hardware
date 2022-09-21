@@ -9,18 +9,21 @@ from dotenv import load_dotenv
 load_dotenv()
 
 URL = os.getenv("SERVER_URL")
-DEVICE_ID = 'a7382f5c33264cf8b717549affe1c2eb'
+DEVICE_ID = 'a7382f5c-3326-4cf8-b717-549affe1c2eb'
 
 counter_read_data = 0
 counter_send_data = 0
 counter_snooze = 1
+counter_red_blink = 0
+counter_green_blink = 0
 
 delay_read_data = 30
-delay_send_data = 100
-delay_snooze = 15
+delay_send_data = 120
+delay_snooze = 100
+# delay_red_blink = 3
 
-led_red_status = False
-led_green_status = False
+blink_red_status = False
+blink_green_status = False
 alarm_status = False
 button_home_status = False
 button_alarm_status = False
@@ -30,8 +33,8 @@ motion = False
 
 state = "DEFAULT"
 
-HOT = 29.8
-COLD = 9.3
+HOT = 27.1
+COLD = 15.3
 
 readings_list = []
 
@@ -51,7 +54,7 @@ def switcher(temp, motion, button_home_status, button_alarm_status):
     elif temp < HOT and temp > COLD and motion == False and button_home_status == True and button_alarm_status == False:
         state = "Out Of House - OK"
     elif (temp > HOT or temp < COLD) and motion == False and button_home_status == True and button_alarm_status == False:
-        state = "Out Of House - HOT of COLD"
+        state = "Out Of House - HOT or COLD"
     else:
         state = "In House - OK"
 
@@ -80,12 +83,9 @@ try:
             if button_alarm_status == True:
                 counter_snooze += 1
 
+            ##### REGISTER BUTTON PRESS #####
             if button_alarm.pushed():
                 button_alarm_status = True
-                # snooze_time = get_time()["second"] + 10
-                # if current_time["second"] == snooze_time:
-                #     button_alarm_status = False
-
                 print("BUTTON ALARM PUSHED")
 
             if button_home.pushed():
@@ -105,73 +105,108 @@ try:
                 motion = data['motion']
 
                 readings_list.append(data)
-                print(readings_list)
-                print("------------------------------")
+                # print(readings_list)
+                # print("------------------------------")
+                # print("time:", data["created_at"])
 
                 counter_read_data = 0
 
                 # print("temp", temp)
+                # print("HOT", HOT)
                 # print("motion", motion)
                 # print("button_home_status", button_home_status)
                 # print("button_alarm_status", button_alarm_status)
-                # print("-----------------")
                 # print("snooze time", snooze_time)
                 # print("current time", current_time)
+                print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< READ")
 
 
             ########### SEND DATA ###########
             if counter_send_data % delay_send_data == 0:
-                # print(URL)
-                # print(DEVICE_ID)
-                print("/////////////////////////SEND")
-                print(readings_list)
-                print("/////////////////////////SEND")
+                # print("............................................................SEND")
+                # print(readings_list)
+                print("............................................................SEND")
 
-
-                # send_data(readings_list, URL, DEVICE_ID)
-                readings_list = []
+                # response_code = send_data(readings_list, URL, DEVICE_ID)
+                # print("@@@@@@@@@@@@RESPONSE CODE: ", response_code)
+                # if response_code == 200:
+                #     readings_list = []
                 counter_send_data = 0
-            
-            
+            print(temp, COLD)
+            ####### RED BLINK #######
+            if blink_red_status:
+                counter_red_blink += 1
+                led_red.on()
+                if counter_red_blink % 6 == 0: # and not counter_red_blink % 18 == 0:
+                    led_red.on()
+                else:
+                    led_red.off()
 
-            # print(".")
+                if counter_red_blink == 6:
+                    counter_red_blink = 0
+
+            ####### GREEN BLINK #######
+            if blink_green_status:
+                counter_green_blink += 1
+                led_green.off()
+                if counter_green_blink % 6 == 0: # and not counter_green_blink % 6 == 0:
+                    led_green.on()
+                else:
+                    led_green.off()
+
+                if counter_green_blink == 6:
+                    counter_green_blink = 0
+
+            ######## RESET HOME BUTTON ########
             if motion == True:
                 button_home_status = False
+
             ##### CHANGE STATE IF NEEDED ######
-            # print(temp)
             switcher(temp, motion, button_home_status, button_alarm_status)
 
             ########## STATE MANAGER ##########
             match state:
                 case "In House - OK":
-                    # alarm.off()
+                    alarm.off()
                     led_green.on()
                     led_red.off()
-                    # print("//////////////////////////// IN HOUSE - OK")
+                    blink_green_status = False
+                    blink_red_status = False
+                    print("//////////////////////////// IN HOUSE - OK")
                 case "Alarm - HOT":
                     alarm.on_hot()
                     led_green.off()
-                    led_red.blink()
+                    # led_red.blink()
+                    blink_green_status = False
+                    blink_red_status = True
                     print("//////////////////////////// ALARM - HOT")
                 case "Alarm - COLD":
-                    # alarm.on_cold()
+                    alarm.on_cold()
                     led_green.off()
-                    led_red.blink()
+                    # led_red.blink()
+                    blink_green_status = False
+                    blink_red_status = True
                     print("//////////////////////////// ALARM - COLD")
                 case "Snooze - HOT or COLD":
                     alarm.off()
-                    led_green.blink()
-                    led_red.blink()
+                    # led_green.blink()
+                    # led_red.blink()
+                    blink_green_status = True
+                    blink_red_status = True
                     print("//////////////////////////// SNOOZE - HOT OR COLD")
                 case "Out Of House - OK":
-                    # alarm.off()
+                    alarm.off()
                     led_green.on()
                     led_red.off()
+                    blink_green_status = False
+                    blink_red_status = False
                     print ("//////////////////////////// OUT OF HOUSE - OK") 
-                case "Out Of House - HOT of COLD":
-                    # alarm.off()
+                case "Out Of House - HOT or COLD":
+                    alarm.off()
                     led_green.off()
-                    led_red.blink()
+                    # led_red.blink()
+                    blink_green_status = False
+                    blink_red_status = True
                     print ("//////////////////////////// OUT OF HOUSE - TEMP HOT OR COLD") 
 
 
