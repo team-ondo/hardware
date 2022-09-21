@@ -29,7 +29,7 @@ def create(alarm_status, button_home_status):
             'humidity': humidity,
             'motion': motion,
             'alarm': alarm_status,
-            'button_home': button_home_status,
+            'button': button_home_status,
             'created_at': timestamp
         }
 
