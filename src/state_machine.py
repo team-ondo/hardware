@@ -1,4 +1,4 @@
-import alarm, led_green, led_red, button_alarm, button_home, sensor_data_dict
+import alarm, led_green, led_red, button_snooze, button_home, sensor_data_dict
 import RPi.GPIO as GPIO
 from send_data import send_data, send_alarm
 from time import sleep
@@ -22,13 +22,12 @@ delay_read_data = 30
 delay_send_data = 120
 delay_send_alarm = 600
 delay_snooze = 100
-# delay_red_blink = 3
 
 blink_red_status = False
 blink_green_status = False
 alarm_status = False
 button_home_status = False
-button_alarm_status = False
+button_snooze_status = False
 alarm_notification_sent = False
 
 temp = 0
@@ -36,27 +35,27 @@ motion = False
 
 state = "DEFAULT"
 
-HOT = 21.1
+HOT = 28.1
 COLD = 15.3
 
 readings_list = []
 
 snooze_time = {}
 
-def switcher(temp, motion, button_home_status, button_alarm_status):
+def switcher(temp, motion, button_home_status, button_snooze_status):
     global HOT
     global COLD
     global state
 
-    if temp > HOT and motion == True and button_home_status == False and button_alarm_status == False:
+    if temp > HOT and motion == True and button_home_status == False and button_snooze_status == False:
         state = "Alarm - HOT"
-    elif temp < COLD and motion == True and button_home_status == False and button_alarm_status == False:
+    elif temp < COLD and motion == True and button_home_status == False and button_snooze_status == False:
         state = "Alarm - COLD"
-    elif (temp > HOT or temp < COLD) and motion == True and button_home_status == False and button_alarm_status == True:
+    elif (temp > HOT or temp < COLD) and motion == True and button_home_status == False and button_snooze_status == True:
         state = "Snooze - HOT or COLD"
-    elif temp < HOT and temp > COLD and motion == False and button_home_status == True and button_alarm_status == False:
+    elif temp < HOT and temp > COLD and motion == False and button_home_status == True and button_snooze_status == False:
         state = "Out Of House - OK"
-    elif (temp > HOT or temp < COLD) and motion == False and button_home_status == True and button_alarm_status == False:
+    elif (temp > HOT or temp < COLD) and motion == False and button_home_status == True and button_snooze_status == False:
         state = "Out Of House - HOT or COLD"
     else:
         state = "In House - OK"
@@ -82,13 +81,13 @@ try:
 
             current_time = get_time()
 
-            if button_alarm_status == True:
+            if button_snooze_status == True:
                 counter_snooze += 1
 
             ##### REGISTER BUTTON PRESS #####
-            if button_alarm.pushed():
-                button_alarm_status = True
-                print("BUTTON ALARM PUSHED")
+            if button_snooze.pushed():
+                button_snooze_status = True
+                print("BUTTON SNOOZE PUSHED")
 
             if button_home.pushed():
                 button_home_status = True
@@ -96,13 +95,14 @@ try:
 
             ######### MANAGE SNOOZE #########
             if counter_snooze % delay_snooze == 0:
-                button_alarm_status = False
+                button_snooze_status = False
                 counter_snooze = 1
                 print("SNOOZE OFF")
 
             ########### READ DATA ###########
+            # TODO add snooze_status
             if counter_read_data % delay_read_data == 0:
-                data = sensor_data_dict.create(alarm_status, button_home_status)
+                data = sensor_data_dict.create(alarm_status, button_home_status, button_snooze_status)
                 temp = data['temperature_c']
                 motion = data['motion']
 
@@ -117,7 +117,7 @@ try:
                 # print("HOT", HOT)
                 # print("motion", motion)
                 # print("button_home_status", button_home_status)
-                # print("button_alarm_status", button_alarm_status)
+                # print("button_snooze_status", button_snooze_status)
                 # print("snooze time", snooze_time)
                 # print("current time", current_time)
                 print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< READ")
@@ -134,7 +134,7 @@ try:
                 # if response_code == 200:
                 #     readings_list = []
                 counter_send_data = 0
-            print(temp, HOT)
+            print(temp)
             ####### RED BLINK #######
             if blink_red_status:
                 counter_red_blink += 1
@@ -170,25 +170,25 @@ try:
                     alarm_notification_sent = False
 
             ##### SEND ALARM NOTIFICATION #####
-            if alarm_status and not alarm_notification_sent:
-                text = ""
-                if state == "Alarm - HOT":
-                    text = "It's too hot in the room! Please check on your loved one"
-                elif state == "Alarm - COLD":
-                    text = "It's too cold in the room! Please check on your loved one"
+            # if alarm_status and not alarm_notification_sent:
+            #     text = ""
+            #     if state == "Alarm - HOT":
+            #         text = "It's too hot in the room! Please check on your loved one"
+            #     elif state == "Alarm - COLD":
+            #         text = "It's too cold in the room! Please check on your loved one"
                     
-                alarm_notification = {"text": text}
+            #     alarm_notification = {"message": text}
 
-                response_code = send_alarm(alarm_notification, URL, DEVICE_ID)
-                while response_code != 200:
-                    response_code = send_alarm(alarm_notification, URL, DEVICE_ID)
-                    print(response_code, ":", "TRY AGAIN")
+            #     response_code = send_alarm(alarm_notification, URL, DEVICE_ID)
+            #     while response_code != 200:
+            #         response_code = send_alarm(alarm_notification, URL, DEVICE_ID)
+            #         print(response_code, ":", "TRY AGAIN")
 
-                alarm_status = False
-                alarm_notification_sent = True
+            #     alarm_status = False
+            #     alarm_notification_sent = True
 
             ##### CHANGE STATE IF NEEDED ######
-            switcher(temp, motion, button_home_status, button_alarm_status)
+            switcher(temp, motion, button_home_status, button_snooze_status)
 
             ########## STATE MANAGER ##########
             match state:
