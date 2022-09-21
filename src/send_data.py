@@ -11,6 +11,7 @@ from time import sleep
 # DEVICE_ID = '1'
 
 def send_data(data, url, device_id):
+    
     try:
         print('Sending')
         # pprint(data)
@@ -19,12 +20,13 @@ def send_data(data, url, device_id):
 
         try:
             res.raise_for_status()
+            return res.status_code
             
         except RequestException as e:
             print("Request failed: ", e)
-            pass
+            return res.status_code
 
-        print('Successfully send the data to server')
+        # print('Successfully send the data to server')
 
     except Exception as e:
         print("Some failure occurred when monitoring sensor", e)
