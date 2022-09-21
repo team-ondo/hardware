@@ -1,6 +1,6 @@
 import alarm, led_green, led_red, button_alarm, button_home, sensor_data_dict
 import RPi.GPIO as GPIO
-from send_data import send_data
+from send_data import send_data, send_alarm
 from time import sleep
 import datetime
 import os
@@ -13,12 +13,14 @@ DEVICE_ID = 'a7382f5c-3326-4cf8-b717-549affe1c2eb'
 
 counter_read_data = 0
 counter_send_data = 0
+counter_send_alarm = 0
 counter_snooze = 1
 counter_red_blink = 0
 counter_green_blink = 0
 
 delay_read_data = 30
 delay_send_data = 120
+delay_send_alarm = 600
 delay_snooze = 100
 # delay_red_blink = 3
 
@@ -27,13 +29,14 @@ blink_green_status = False
 alarm_status = False
 button_home_status = False
 button_alarm_status = False
+alarm_notification_sent = False
 
 temp = 0
 motion = False
 
 state = "DEFAULT"
 
-HOT = 27.1
+HOT = 21.1
 COLD = 15.3
 
 readings_list = []
@@ -69,7 +72,6 @@ def get_time():
         "minute": minute,
         "second": second
     }
-
 
 
 try:
@@ -132,7 +134,7 @@ try:
                 # if response_code == 200:
                 #     readings_list = []
                 counter_send_data = 0
-            print(temp, COLD)
+            print(temp, HOT)
             ####### RED BLINK #######
             if blink_red_status:
                 counter_red_blink += 1
@@ -161,48 +163,72 @@ try:
             if motion == True:
                 button_home_status = False
 
+            #### CHECK NOTIFICATION STATUS ####
+            if alarm_notification_sent:
+                counter_send_alarm += 1
+                if counter_send_alarm % delay_send_alarm == 0:
+                    alarm_notification_sent = False
+
+            ##### SEND ALARM NOTIFICATION #####
+            if alarm_status and not alarm_notification_sent:
+                text = ""
+                if state == "Alarm - HOT":
+                    text = "It's too hot in the room! Please check on your loved one"
+                elif state == "Alarm - COLD":
+                    text = "It's too cold in the room! Please check on your loved one"
+                    
+                alarm_notification = {"text": text}
+
+                response_code = send_alarm(alarm_notification, URL, DEVICE_ID)
+                while response_code != 200:
+                    response_code = send_alarm(alarm_notification, URL, DEVICE_ID)
+                    print(response_code, ":", "TRY AGAIN")
+
+                alarm_status = False
+                alarm_notification_sent = True
+
             ##### CHANGE STATE IF NEEDED ######
             switcher(temp, motion, button_home_status, button_alarm_status)
 
             ########## STATE MANAGER ##########
             match state:
                 case "In House - OK":
-                    alarm.off()
+                    alarm_status = alarm.off()
                     led_green.on()
                     led_red.off()
                     blink_green_status = False
                     blink_red_status = False
                     print("//////////////////////////// IN HOUSE - OK")
                 case "Alarm - HOT":
-                    alarm.on_hot()
+                    alarm_status = alarm.on_hot()
                     led_green.off()
                     # led_red.blink()
                     blink_green_status = False
                     blink_red_status = True
                     print("//////////////////////////// ALARM - HOT")
                 case "Alarm - COLD":
-                    alarm.on_cold()
+                    alarm_status = alarm.on_cold()
                     led_green.off()
                     # led_red.blink()
                     blink_green_status = False
                     blink_red_status = True
                     print("//////////////////////////// ALARM - COLD")
                 case "Snooze - HOT or COLD":
-                    alarm.off()
+                    alarm_status = alarm.off()
                     # led_green.blink()
                     # led_red.blink()
                     blink_green_status = True
                     blink_red_status = True
                     print("//////////////////////////// SNOOZE - HOT OR COLD")
                 case "Out Of House - OK":
-                    alarm.off()
+                    alarm_status = alarm.off()
                     led_green.on()
                     led_red.off()
                     blink_green_status = False
                     blink_red_status = False
                     print ("//////////////////////////// OUT OF HOUSE - OK") 
                 case "Out Of House - HOT or COLD":
-                    alarm.off()
+                    alarm_status = alarm.off()
                     led_green.off()
                     # led_red.blink()
                     blink_green_status = False
