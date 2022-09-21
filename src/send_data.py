@@ -2,13 +2,6 @@ import requests
 from requests import RequestException
 from pprint import pprint
 from time import sleep
-# import os
-# from dotenv import load_dotenv
-
-# load_dotenv()
-
-# URL = os.getenv("SERVER_URL")
-# DEVICE_ID = '1'
 
 def send_data(data, url, device_id):
     
@@ -17,6 +10,29 @@ def send_data(data, url, device_id):
         # pprint(data)
         res = requests.post(f'{url}/device-data/{device_id}', json = data)
         print(res.text)
+
+        try:
+            res.raise_for_status()
+            return res.status_code
+            
+        except RequestException as e:
+            print("Request failed: ", e)
+            return res.status_code
+
+        # print('Successfully send the data to server')
+
+    except Exception as e:
+        print("Some failure occurred when monitoring sensor", e)
+
+def send_alarm(data, url, device_id):
+    
+    try:
+        print('Sending')
+        # pprint(data)
+        res = requests.post(f'{url}/device/{device_id}/alarm/on', json = data)
+        print(res.text)
+
+        # {"text": "It's too hot in the room! Please check on your loved one"}
 
         try:
             res.raise_for_status()
