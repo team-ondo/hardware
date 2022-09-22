@@ -50,15 +50,15 @@ def switcher(temp, motion, button_home_status, button_snooze_status):
     global COLD
     global state
 
-    if temp > HOT and motion and button_home_status == False and button_snooze_status == False:
+    if temp >= HOT and (motion or not motion) and button_home_status == False and button_snooze_status == False:
         state = "Alarm - HOT"
-    elif temp < COLD and motion and button_home_status == False and button_snooze_status == False:
+    elif temp <= COLD and motion and button_home_status == False and button_snooze_status == False:
         state = "Alarm - COLD"
-    elif (temp > HOT or temp < COLD) and (motion or not motion) and button_home_status == False and button_snooze_status == True:
+    elif (temp >= HOT or temp <= COLD) and (motion or not motion) and button_home_status == False and button_snooze_status == True:
         state = "Snooze - HOT or COLD"
-    elif temp < HOT and temp > COLD and (motion or not motion) and button_home_status == True and button_snooze_status == False:
+    elif temp <= HOT and temp >= COLD and (motion or not motion) and button_home_status == True and button_snooze_status == False:
         state = "Out Of House - OK"
-    elif (temp > HOT or temp < COLD) and not motion and button_home_status == True and (button_snooze_status == False or button_snooze_status == True):
+    elif (temp >= HOT or temp <= COLD) and not motion and button_home_status == True and (button_snooze_status == False or button_snooze_status == True):
         state = "Out Of House - HOT or COLD"
     else:
         state = "In House - OK"
