@@ -5,6 +5,9 @@ import button_home
 from time import sleep
 import datetime
 
+def create_timestamp():
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
 def create(alarm_status, button_home_status, button_snooze_status):
     """Create data from multiple sensors
 
@@ -21,7 +24,8 @@ def create(alarm_status, button_home_status, button_snooze_status):
         temp_f = round(sensor_temp["temperature_f"], 1)
         humidity = sensor_temp["humidity"]
         motion = get_motion()
-        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = create_timestamp()
 
         return {
             'temperature_c': temp_c,
