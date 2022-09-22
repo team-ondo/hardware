@@ -17,13 +17,11 @@ counter_send_alarm = 0
 counter_snooze = 1
 counter_red_blink = 0
 counter_green_blink = 0
-counter_state_change = 0
 
 delay_read_data = 30
 delay_send_data = 120
 delay_send_alarm = 600
-delay_snooze = 100
-delay_state_change = 140
+delay_snooze = 450
 
 blink_red_status = False
 blink_green_status = False
@@ -31,14 +29,13 @@ alarm_status = False
 button_home_status = False
 button_snooze_status = False
 alarm_notification_sent = False
-state_changed_recently = False
 
 temp = 0
 motion = False
 
 state = "DEFAULT"
 
-HOT = 22.1
+HOT = 26.1
 COLD = 15.3
 
 readings_list = []
@@ -50,15 +47,15 @@ def switcher(temp, motion, button_home_status, button_snooze_status):
     global COLD
     global state
 
-    if temp > HOT and motion == True and button_home_status == False and button_snooze_status == False:
+    if temp > HOT and motion and button_home_status == False and button_snooze_status == False:
         state = "Alarm - HOT"
-    elif temp < COLD and motion == True and button_home_status == False and button_snooze_status == False:
+    elif temp < COLD and motion and button_home_status == False and button_snooze_status == False:
         state = "Alarm - COLD"
-    elif (temp > HOT or temp < COLD) and motion == True and button_home_status == False and button_snooze_status == True:
+    elif (temp > HOT or temp < COLD) and (motion or not motion) and button_home_status == False and button_snooze_status == True:
         state = "Snooze - HOT or COLD"
-    elif temp < HOT and temp > COLD and motion == False and button_home_status == True and button_snooze_status == False:
+    elif temp < HOT and temp > COLD and (motion or not motion) and button_home_status == True and button_snooze_status == False:
         state = "Out Of House - OK"
-    elif (temp > HOT or temp < COLD) and motion == False and button_home_status == True and button_snooze_status == False:
+    elif (temp > HOT or temp < COLD) and not motion and button_home_status == True and (button_snooze_status == False or button_snooze_status == True):
         state = "Out Of House - HOT or COLD"
     else:
         state = "In House - OK"
@@ -84,9 +81,6 @@ try:
 
             current_time = get_time()
 
-            if button_snooze_status == True:
-                counter_snooze += 1
-
             ##### REGISTER BUTTON PRESS #####
             if button_snooze.pushed():
                 button_snooze_status = True
@@ -103,7 +97,6 @@ try:
                 print("SNOOZE OFF")
 
             ########### READ DATA ###########
-            # TODO add snooze_status
             if counter_read_data % delay_read_data == 0:
                 data = sensor_data_dict.create(alarm_status, button_home_status, button_snooze_status)
                 temp = data['temperature_c']
@@ -128,7 +121,6 @@ try:
             print("motion", motion)
             print("button_home_status", button_home_status)
             print("button_snooze_status", button_snooze_status)
-            print("state_changed_recently", state_changed_recently)
 
             ########### SEND DATA ###########
             if counter_send_data % delay_send_data == 0:
@@ -142,6 +134,12 @@ try:
                 #     readings_list = []
                 counter_send_data = 0
             print(temp)
+
+            ##### UPDATE SNOOZE COUNTER #####
+            if button_snooze_status == True:
+                counter_snooze += 1
+                motion = False
+
             ####### RED BLINK #######
             if blink_red_status:
                 counter_red_blink += 1
@@ -167,7 +165,7 @@ try:
                     counter_green_blink = 0
 
             ######## RESET HOME BUTTON ########
-            if motion == True and not state_changed_recently:
+            if motion == True:
                 button_home_status = False
 
             #### CHECK NOTIFICATION STATUS ####
@@ -193,16 +191,6 @@ try:
 
             #     alarm_status = False
             #     alarm_notification_sent = True
-
-            ####### CHECK STATE CHANGE ########
-            # if state_changed_recently:
-            #     print(counter_state_change)
-            #     counter_state_change += 1
-            #     if counter_state_change % delay_state_change == 0:
-            #         state_changed_recently = False
-            #         counter_state_change = 0
-            # else:
-            #     switcher(temp, motion, button_home_status, button_snooze_status)
 
             ##### CHANGE STATE IF NEEDED ######
             switcher(temp, motion, button_home_status, button_snooze_status)
@@ -232,7 +220,6 @@ try:
                     alarm_status = alarm.off()
                     blink_green_status = True
                     blink_red_status = True
-                    # state_changed_recently = True
                     print("//////////////////////////// SNOOZE - HOT OR COLD")
                 case "Out Of House - OK":
                     alarm_status = alarm.off()
