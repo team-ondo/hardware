@@ -17,11 +17,13 @@ counter_send_alarm = 0
 counter_snooze = 1
 counter_red_blink = 0
 counter_green_blink = 0
+counter_leave_house = 0
 
 delay_read_data = 30
 delay_send_data = 120
 delay_send_alarm = 600
 delay_snooze = 450
+delay_leave_house = 450
 
 blink_red_status = False
 blink_green_status = False
@@ -29,13 +31,14 @@ alarm_status = False
 button_home_status = False
 button_snooze_status = False
 alarm_notification_sent = False
+can_reset_home_button = False
 
 temp = 0
 motion = False
 
 state = "DEFAULT"
 
-HOT = 26.1
+HOT = 26.5
 COLD = 15.3
 
 readings_list = []
@@ -164,9 +167,19 @@ try:
                 if counter_green_blink == 6:
                     counter_green_blink = 0
 
+            ######## DELAY HOME BUTTON ########
+            if button_home_status == True and not can_reset_home_button:
+                counter_leave_house += 1
+                print(counter_leave_house)
+                if counter_leave_house % delay_leave_house == 0:
+                    can_reset_home_button = True
+                    counter_leave_house = 0
+
             ######## RESET HOME BUTTON ########
-            if motion == True:
+            if motion and can_reset_home_button:
                 button_home_status = False
+                can_reset_home_button = False
+
 
             #### CHECK NOTIFICATION STATUS ####
             if alarm_notification_sent:
@@ -223,9 +236,9 @@ try:
                     print("//////////////////////////// SNOOZE - HOT OR COLD")
                 case "Out Of House - OK":
                     alarm_status = alarm.off()
-                    led_green.on()
+                    # led_green.on()
                     led_red.off()
-                    blink_green_status = False
+                    blink_green_status = True
                     blink_red_status = False
                     print ("//////////////////////////// OUT OF HOUSE - OK") 
                 case "Out Of House - HOT or COLD":
