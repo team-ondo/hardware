@@ -3,6 +3,7 @@ import RPi.GPIO as GPIO
 from sensor_data_dict import create_timestamp
 from send_data import send_data, send_alarm
 from time import sleep
+from enum import Enum, auto
 import datetime
 import os
 from dotenv import load_dotenv
@@ -37,14 +38,22 @@ can_reset_home_button = False
 temp = 0
 motion = False
 
-state = "DEFAULT"
-
-HOT = 22.5
+HOT = 25.5
 COLD = 15.3
 
 readings_list = []
 
 snooze_time = {}
+
+class State(Enum):
+    ALARM_HOT = auto()
+    ALARM_COLD = auto()
+    SNOOZE = auto()
+    OUT_OF_HOUSE_OK = auto()
+    OUT_OF_HOUSE_HOT_COLD = auto()
+    IN_HOUSE = auto()
+
+state = State.IN_HOUSE
 
 def switcher(temp, motion, button_home_status, button_snooze_status):
     global HOT
@@ -52,17 +61,17 @@ def switcher(temp, motion, button_home_status, button_snooze_status):
     global state
 
     if temp >= HOT and (motion or not motion) and button_home_status == False and button_snooze_status == False:
-        state = "Alarm - HOT"
+        state = State.ALARM_HOT
     elif temp <= COLD and motion and button_home_status == False and button_snooze_status == False:
-        state = "Alarm - COLD"
+        state = State.ALARM_COLD
     elif (temp >= HOT or temp <= COLD) and (motion or not motion) and button_home_status == False and button_snooze_status == True:
-        state = "Snooze - HOT or COLD"
+        state = State.SNOOZE
     elif temp <= HOT and temp >= COLD and (motion or not motion) and button_home_status == True and button_snooze_status == False:
-        state = "Out Of House - OK"
+        state = State.OUT_OF_HOUSE_OK
     elif (temp >= HOT or temp <= COLD) and not motion and button_home_status == True and (button_snooze_status == False or button_snooze_status == True):
-        state = "Out Of House - HOT or COLD"
+        state = State.OUT_OF_HOUSE_HOT_COLD
     else:
-        state = "In House - OK"
+        state = State.IN_HOUSE
 
 def get_time():
     now = datetime.datetime.now()
@@ -108,8 +117,6 @@ try:
 
                 readings_list.append(data)
                 print(readings_list)
-                # print("------------------------------")
-                # print("time:", data["created_at"])
 
                 counter_read_data = 0
 
@@ -191,9 +198,13 @@ try:
             ##### SEND ALARM NOTIFICATION #####
             if alarm_status and not alarm_notification_sent:
                 text = ""
-                if state == "Alarm - HOT":
+                # if state == "Alarm - HOT":
+                #     text = "It's too hot in the room! Please check on your loved one"
+                # elif state == "Alarm - COLD":
+                #     text = "It's too cold in the room! Please check on your loved one"
+                if state == State.ALARM_HOT:
                     text = "It's too hot in the room! Please check on your loved one"
-                elif state == "Alarm - COLD":
+                elif state == State.ALARM_COLD:
                     text = "It's too cold in the room! Please check on your loved one"
                     
                 alarm_notification = {"message": text, "type": "alarm", "created_at": create_timestamp()}
@@ -212,43 +223,42 @@ try:
 
             ########## STATE MANAGER ##########
             match state:
-                case "In House - OK":
+                case State.IN_HOUSE:
                     alarm_status = alarm.off()
                     led_green.on()
                     led_red.off()
                     blink_green_status = False
                     blink_red_status = False
-                    # print("//////////////////////////// IN HOUSE - OK")
-                case "Alarm - HOT":
+                    print("//////////////////////////// IN HOUSE - OK")
+                case State.ALARM_HOT:
                     alarm_status = alarm.on_hot()
                     led_green.off()
                     blink_green_status = False
                     blink_red_status = True
-                    # print("//////////////////////////// ALARM - HOT")
-                case "Alarm - COLD":
+                    print("//////////////////////////// ALARM - HOT")
+                case State.ALARM_COLD:
                     alarm_status = alarm.on_cold()
                     led_green.off()
                     blink_green_status = False
                     blink_red_status = True
-                    # print("//////////////////////////// ALARM - COLD")
-                case "Snooze - HOT or COLD":
+                    print("//////////////////////////// ALARM - COLD")
+                case State.SNOOZE:
                     alarm_status = alarm.off()
                     blink_green_status = True
                     blink_red_status = True
-                    # print("//////////////////////////// SNOOZE - HOT OR COLD")
-                case "Out Of House - OK":
+                    print("//////////////////////////// SNOOZE")
+                case State.OUT_OF_HOUSE_OK:
                     alarm_status = alarm.off()
-                    # led_green.on()
                     led_red.off()
                     blink_green_status = True
                     blink_red_status = False
-                    # print ("//////////////////////////// OUT OF HOUSE - OK") 
-                case "Out Of House - HOT or COLD":
+                    print ("//////////////////////////// OUT OF HOUSE - OK") 
+                case State.OUT_OF_HOUSE_HOT_COLD:
                     alarm_status = alarm.off()
                     led_green.off()
                     blink_green_status = False
                     blink_red_status = True
-                    # print ("//////////////////////////// OUT OF HOUSE - TEMP HOT OR COLD") 
+                    print ("//////////////////////////// OUT OF HOUSE - TEMP HOT OR COLD") 
 
 
         except Exception as e:
