@@ -8,8 +8,7 @@
 <br />
 <div align="center">
 <a href="https://github.com/team-ondo/backend">
-<!-- <img src="docs/images/logo_current.png" alt="Logo" width="350" height="119"> -->
-<img src="https://user-images.githubusercontent.com/102517425/194003143-e139f888-a2d1-4d9d-9ebe-d6bff9484489.png" alt="Logo" width="800" height="450">
+<img src="docs/images/ondo_product_image.png" alt="image of ondo product">
 </a>
 </a>
 
@@ -28,7 +27,6 @@
     <a href="https://github.com/team-ondo/hardware/issues">Request Feature</a>
   </p>
 </div>
-
 
 <details>
   <summary>Table of Contents</summary>
@@ -58,8 +56,6 @@
   </ol>
 </details>
 
-
-
 ## About The Project
 
 ### Built With
@@ -70,7 +66,6 @@
 [![Visual studio code][Visual studio code]][Visual studio code-url]  
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 ## Getting Started
 
@@ -84,6 +79,7 @@
 
 - Create a new file named .env at the root of the project.
 - Set up the .env file and set the key and values like below.
+
     ```env
     SERVER_URL="https://ondo-backend-test.onrender.com"
     ```
@@ -91,31 +87,36 @@
 ### Installation
 
 1. Clone the repo
+
    ```sh
    git clone https://github.com/team-ondo/hardware.git
    ```
+
 2. Install libraries
+
    ```sh
    poetry install
    ```
+
 3. Run state machine program
+
    ```sh
    make run-state
    ```
+
 4. Run socket client program
+
     ```sh
     make run-socket
     ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
 ## Roadmap
 
 See the [open issues](https://github.com/team-ondo/hardware/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 ## Contributing
 
@@ -131,7 +132,6 @@ Don't forget to give the project a star! Thanks again!
 5. Open a Pull Request
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 ## Contact
 
