@@ -41,6 +41,9 @@
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li>
+            <a href="#hardwares">Hardwares</a>
+        </li>
+        <li>
             <a href="#prerequisites">Prerequisites</a>
             <ul>
                 <li><a href="#environment">Environment</a></li>
@@ -68,6 +71,14 @@
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Getting Started
+
+### Hardwares
+
+- Raspberry Pi 4
+- DHT-22 Temperature and Humidity Sensor
+- HC-SR501 PIR Motion Sensor
+- Buttons
+- LEDs
 
 ### Prerequisites
 
